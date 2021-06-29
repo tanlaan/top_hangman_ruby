@@ -1,4 +1,5 @@
 require_relative './tui.rb'
+require 'json'
 
 class Game
     def initialize(words)
@@ -9,6 +10,7 @@ class Game
         @reveal =  "_" * @word.length
         @guesses = []
         @failed_guesses = []
+        @saved
     end
 
     def get_random_word(words)
@@ -38,6 +40,7 @@ class Game
             print '>'
             guess = gets.chomp
             return guess if guess.length == 1
+            return 'save' if guess.downcase == 'save'
         end
     end
 
@@ -53,6 +56,28 @@ class Game
 
             # Get user input and verify against prior guesses
             guess = get_user_guess(@guesses)
+
+            # Save and exit
+            if guess == 'save'
+
+                # Serialize state into JSON
+
+                # Write JSON to file ./save/hangman.json
+                save_file_path = './save/hangman.json'
+                File.delete(save_file_path) if File.exist?(save_file_path)
+                File.open(save_file_path,'w') do |f|
+                    f.write(self.to_json)
+                end
+                save_file = File.new(save_file_path, 'w') unless 
+
+                # Set flags and exit
+                # Exit program without asking to play again
+                @saved = true
+                # Exit loop immediately
+                @game_over = true
+                next
+            end
+            
             # Add to guesses
             @guesses += [guess]
             # Add to guesses if not in word
@@ -74,5 +99,6 @@ class Game
                 @game_over = true
             end
         end
+        @saved
     end
 end

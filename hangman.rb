@@ -23,8 +23,8 @@ def main()
     playing = true
     start_message
     while playing
-        Game.new(words).start
-        playing = play_again_prompt
+        saved = Game.new(words).start
+        playing = saved ? false : play_again_prompt
     end
 end
 
