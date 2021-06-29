@@ -1,8 +1,9 @@
 require_relative './tui.rb'
 require_relative './saving.rb'
-require 'json'
+require 'yaml'
 
 class Game
+    attr_reader :count, :reveal, :guesses, :failed_guesses
     def initialize(words)
         @game_over = false
         @word = get_random_word(words)
@@ -11,7 +12,8 @@ class Game
         @reveal =  "_" * @word.length
         @guesses = []
         @failed_guesses = []
-        @saved
+        @save_file_path = 'hangman.yaml'
+        @saved = File.exist?(@save_file_path)
     end
 
     def get_random_word(words)
@@ -43,8 +45,20 @@ class Game
     end
 
     def start
+
+        # If we have a save, do we want to continue?
+        continue = get_user_continue if @saved
+
+        if continue
+            self.import(YAML.load_file('hangman.yaml'))
+        else
+            File.delete('hangman.yaml') if File.exist?('hangman.yaml')
+        end
+
+        continue ? self.import(YAML.load_file('hangman.yaml')) : File.delete('hangman.yaml') if File.exist?('hangman.yaml')
+        @saved = false
+
         until @game_over
-            # Print initial board
             print_board
 
             # Get user input and verify against prior guesses
@@ -52,7 +66,7 @@ class Game
 
             # Save and exit
             if guess == 'save'
-                write_to_file(self.to_json, './save/hangman.json')
+                write_to_file(YAML.dump(self), @save_file_path)
                 @saved = true
                 @game_over = true
                 next
@@ -84,4 +98,11 @@ class Game
         end
         @saved
     end
+end
+
+def import(state)
+    @count = state.count
+    @reveal = state.reveal
+    @guesses = state.guesses
+    @failed_guesses = state.failed_guesses
 end
