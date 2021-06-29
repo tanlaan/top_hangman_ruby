@@ -1,4 +1,5 @@
 require_relative './tui.rb'
+require_relative './saving.rb'
 require 'json'
 
 class Game
@@ -59,21 +60,8 @@ class Game
 
             # Save and exit
             if guess == 'save'
-
-                # Serialize state into JSON
-
-                # Write JSON to file ./save/hangman.json
-                save_file_path = './save/hangman.json'
-                File.delete(save_file_path) if File.exist?(save_file_path)
-                File.open(save_file_path,'w') do |f|
-                    f.write(self.to_json)
-                end
-                save_file = File.new(save_file_path, 'w') unless 
-
-                # Set flags and exit
-                # Exit program without asking to play again
+                write_to_file(self.to_json, './save/hangman.json')
                 @saved = true
-                # Exit loop immediately
                 @game_over = true
                 next
             end
