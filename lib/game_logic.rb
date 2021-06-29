@@ -3,7 +3,7 @@ require_relative './saving.rb'
 require 'yaml'
 
 class Game
-    attr_reader :count, :reveal, :guesses, :failed_guesses
+    attr_reader :word, :count, :reveal, :guesses, :failed_guesses
     def initialize(words)
         @game_over = false
         @word = get_random_word(words)
@@ -50,12 +50,10 @@ class Game
         continue = get_user_continue if @saved
 
         if continue
-            self.import(YAML.load_file('hangman.yaml'))
+            self.import(YAML.load_file(@save_file_path))
         else
-            File.delete('hangman.yaml') if File.exist?('hangman.yaml')
+            File.delete(@save_file_path) if File.exist?(@save_file_path)
         end
-
-        continue ? self.import(YAML.load_file('hangman.yaml')) : File.delete('hangman.yaml') if File.exist?('hangman.yaml')
         @saved = false
 
         until @game_over
@@ -101,6 +99,7 @@ class Game
 end
 
 def import(state)
+    @word = state.word
     @count = state.count
     @reveal = state.reveal
     @guesses = state.guesses
