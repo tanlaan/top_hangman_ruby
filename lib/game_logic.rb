@@ -1,10 +1,13 @@
+require_relative './tui.rb'
+
 class Game
     def initialize(words)
         @game_over = false
         @word = get_random_word(words)
         @count = 0
         @hanged_man = 6
-        @guess =  "_" * @word.length
+        @reveal =  "_" * @word.length
+        @guesses = []
         @failed_guesses = []
     end
 
@@ -12,53 +15,64 @@ class Game
         words[Random.rand(words.length)]
     end
 
-    def reveal(guess)
-        guess.split('').join(' ')
+    def print_reveal
+        puts @reveal.split('').join(' ')
+    end
+
+    def print_hangman
+        puts hangmen(@count)
+    end
+    
+    def print_failed_guesses
+        puts "Bad Guesses: #{@failed_guesses.join(', ')}" if @failed_guesses.length > 0
     end
 
     def print_board
-        puts hangmen(@count)
-        puts reveal(@guess)
+        print_hangman
+        print_reveal
+        print_failed_guesses
+    end
+
+    def get_user_guess(guesses)
+        loop do
+            print '>'
+            guess = gets.chomp
+            return guess if guess.length == 1
+        end
+    end
+
+    def correct_guess_insert(guess)
+        @word.split('').each_with_index do |character, index|
+            @reveal[index] = character if character == guess   
+        end
     end
 
     def start
         until @game_over
             print_board
 
-            # Take input
-            # Modify reveal_word based on input
-
-            if @reveal_word == @word
+            # Get user input and verify against prior guesses
+            guess = get_user_guess(@guesses)
+            # Add to guesses
+            @guesses += [guess]
+            # Add to guesses if not in word
+            @failed_guesses += [guess] unless @word.split('').include?(guess)
+            # Modify reveal_word based on guess
+            correct_guess_insert(guess) if @word.split('').include?(guess)
+            if @reveal == @word
                 print_board
                 puts 'You Win!'
                 @game_over = true 
             end
 
-            @count += 1
+            @count += 1 unless @word.split('').include?(guess)
 
             if @count == @hanged_man
                 print_board
                 puts 'You lost!'
+                puts "The word was #{@word}!"
                 @game_over = true
             end
         end
     end
-end
-
-def play_again
-    player_response = nil
-    while valid_response(player_response).nil?
-        puts "Want to play again?"
-        print ">"
-        player_response = gets.chomp
-    end
-    valid_response(player_response)
-end
-
-def valid_response(response)
-    valid_yes = ['yes','y']
-    valid_no = ['no', 'n']
-    return true if valid_yes.include?(response)
-    return false if valid_no.include?(response)
-    nil
 end
