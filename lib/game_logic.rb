@@ -36,15 +36,6 @@ class Game
         print_failed_guesses
     end
 
-    def get_user_guess(guesses)
-        loop do
-            print '>'
-            guess = gets.chomp
-            return guess if guess.length == 1
-            return 'save' if guess.downcase == 'save'
-        end
-    end
-
     def correct_guess_insert(guess)
         @word.split('').each_with_index do |character, index|
             @reveal[index] = character if character == guess   
@@ -53,6 +44,7 @@ class Game
 
     def start
         until @game_over
+            # Print initial board
             print_board
 
             # Get user input and verify against prior guesses
@@ -68,8 +60,10 @@ class Game
             
             # Add to guesses
             @guesses += [guess]
-            # Add to guesses if not in word
+
+            # Add to failed_guesses if not in word
             @failed_guesses += [guess] unless @word.split('').include?(guess)
+
             # Modify reveal_word based on guess
             correct_guess_insert(guess) if @word.split('').include?(guess)
             if @reveal == @word
@@ -78,6 +72,7 @@ class Game
                 @game_over = true 
             end
 
+            # Increment our count if we failed to guess a character
             @count += 1 unless @word.split('').include?(guess)
 
             if @count == @hanged_man

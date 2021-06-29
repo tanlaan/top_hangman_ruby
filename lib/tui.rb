@@ -16,3 +16,12 @@ def valid_response(response)
     return false if valid_no.include?(response)
     nil
 end
+
+def get_user_guess(guesses)
+    loop do
+        print '>'
+        guess = gets.chomp
+        return guess if guess.length == 1
+        return 'save' if guess.downcase == 'save'
+    end
+end
